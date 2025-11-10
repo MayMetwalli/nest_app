@@ -1,31 +1,35 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { BadRequestException, Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
+import { InjectModel } from '@nestjs/mongoose';
+import { Model } from 'mongoose';
+import { User } from 'src/Users/user.schema';
 import { UsersService } from 'src/Users/user.service'; 
-import * as bcrypt from 'bcryptjs';
+import { LoginDto, SignupDto } from './signup.dto';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  constructor(
-    private usersService: UsersService,
-    private jwtService: JwtService,
-  ) {}
-
-  async signup(dto: any) {
-    const user = await this.usersService.create(dto);
-    return user;
+  signup(data: SignupDto) {
+    throw new Error('Method not implemented.');
   }
 
-  async login(dto: any) {
-    const user = await this.usersService.findByEmail(dto.email);
-    if (!user) throw new UnauthorizedException('Invalid email');
-    const isMatch = await bcrypt.compare(dto.password, user.password);
-    if (!isMatch) throw new UnauthorizedException('Wrong password');
-    const payload = { sub: user._id, email: user.email };
-    return { access_token: this.jwtService.sign(payload) };
-  }
+  constructor(@InjectModel(User.name) private userModel:Model<User>,
+  private JwtService: JwtService){}
 
-  async googleLogin(req: any) {
-    if (!req.user) throw new UnauthorizedException();
-    return { message: 'Google login successful', user: req.user };
+
+  async login(data: LoginDto){
+    const {email, password} = data
+    const user = await this.userModel.findOne({email})
+    if(!user || !await bcrypt.compare(password, user.password)){
+      throw new BadRequestException('invalid credentials')
+    }
+    const accessToken = await this.JwtService.sign({
+      _id: user._id
+    },{
+      secret: process.env.TOKEN_SECRET as string
+    })
+    return{
+      accessToken
+    }
   }
 }
