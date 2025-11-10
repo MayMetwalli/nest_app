@@ -3,13 +3,14 @@ import { AuthService } from './auth.service';
 import type {Request } from "express"
 import { TransformTpUpperCasePipe } from 'src/Pipes/upper-case.pipe';
 import { RegisterBodyDto } from './auth.dto';
-import { AuthGuard } from 'src/Guards/auth.guard';
+// import { AuthGuard } from 'src/Guards/auth.guard';
 import { Auth, AuthUser, Roles } from 'src/Decorators/custom.decorator';
 import { RolesGuard } from 'src/Guards/roles.guard';
 import { CheckPasswordPipe } from 'src/Pipes/checkPassword.pipe';
 import { LoginDto, SignupDto } from './signup.dto';
 import { ZodValidationPipe } from 'src/Pipes/zod.pipe';
 import { loginSchema, signupSchema } from './signup.zod';
+import { AuthGuard } from '@nestjs/passport';
 
 
 
@@ -31,6 +32,33 @@ async signup(@Body() data:SignupDto){
 async login(@Body() data:LoginDto){
   return await this.authService.login(data)
 }
+
+@Get('confirm')
+async confirm(@Query('token') token: string) {
+  return this.authService.confirmEmail(token);
+}
+
+@Post('forgot-password')
+async forgot(@Body('email') email: string) {
+  return this.authService.forgotPassword(email);
+}
+
+@Post('reset-password')
+async reset(@Body() body: { token: string, newPassword: string }) {
+  return this.authService.resetPassword(body.token, body.newPassword);
+}
+
+@Get('google')
+@UseGuards(AuthGuard('google'))
+async googleLogin() {
+}
+
+@Get('google/callback')
+@UseGuards(AuthGuard('google'))
+googleCallback(@Req() req) {
+  return req.user; 
+}
+
 // @UseGuards(new AuthGuard(), RolesGuard)
 // @Auth(['user', 'admin'])
 // @UsePipes(new ValidationPipe({whitelist:true}))

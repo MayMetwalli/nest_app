@@ -17,6 +17,10 @@ export class User extends Document {
 
   @Prop()
   googleId?: string;
+
+    @Prop({ default: false })   
+  isActive: boolean;         
+
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
