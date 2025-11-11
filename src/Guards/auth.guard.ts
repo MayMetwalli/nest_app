@@ -1,6 +1,10 @@
+import { HydratedUser } from './../Types/user.type';
 import { CanActivate, ExecutionContext, Injectable } from "@nestjs/common";
 
 
+export interface AuthRequest extends Request {
+    user: HydratedUser
+}
 
 @Injectable()
 export class AuthGuard implements CanActivate {
