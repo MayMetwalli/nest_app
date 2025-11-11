@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Get, Req, UseGuards, Query, Param, Headers, ParseIntPipe, NotAcceptableException, DefaultValuePipe, ValidationPipe, UsePipes } from '@nestjs/common';
+import { Controller, Post, Body, Get, Req, UseGuards, Query, Param, Headers, ParseIntPipe, NotAcceptableException, DefaultValuePipe, ValidationPipe, UsePipes, UseInterceptors } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import type {Request } from "express"
 import { TransformTpUpperCasePipe } from 'src/Pipes/upper-case.pipe';
@@ -11,6 +11,7 @@ import { LoginDto, SignupDto } from './signup.dto';
 import { ZodValidationPipe } from 'src/Pipes/zod.pipe';
 import { loginSchema, signupSchema } from './signup.zod';
 import { AuthGuard } from '@nestjs/passport';
+import { LoggerInterceptor } from 'src/Interceptors/logger.interceptor';
 
 
 
@@ -54,6 +55,7 @@ async googleLogin() {
 }
 
 @Get('google/callback')
+@UseInterceptors(LoggerInterceptor)
 @UseGuards(AuthGuard('google'))
 googleCallback(@Req() req) {
   return req.user; 
