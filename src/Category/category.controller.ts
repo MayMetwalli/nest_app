@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { CategoryService } from "./category.service";
 import { ICategory } from "src/Types/category.type";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -37,8 +37,9 @@ export class CategoryController {
         if(image){
             data.image = image.path
         }
-            data.createdBy = req.user._id
-        return {data: await this.categoryService.update(id, data)}
+            data.createdBy = req.user._id as any;
+             const categoryId = new Types.ObjectId(id);
+        return {data: await this.categoryService.update(categoryId, data)}
     }
 
 
@@ -46,5 +47,12 @@ export class CategoryController {
     async findAll(){
         return {data: await this.categoryService.findAll()}
     }
+
+@Delete('delete/:id')
+@UseGuards(AuthGuard)
+async deleteCategory(@Param('id') id: string, @Req() req: AuthRequest) {
+    return this.categoryService.delete(id, req.user.id);
+}
+
 }
 

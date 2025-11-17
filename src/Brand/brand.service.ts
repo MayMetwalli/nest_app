@@ -1,4 +1,4 @@
-import { ConflictException, Injectable, NotAcceptableException } from "@nestjs/common";
+import { ConflictException, Injectable, NotAcceptableException, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model, Types } from "mongoose";
 import { Brand } from "src/Models/brand.model";
@@ -7,6 +7,7 @@ import * as fs from "fs/promises";
 
 @Injectable()
 export class BrandService {
+  productModel: any;
   constructor(@InjectModel(Brand.name) private brandModel: Model<Brand>) {}
 
   async create(data: IBrand) {
@@ -32,16 +33,16 @@ export class BrandService {
       brand.name = data.name;
     }
 
-    if (data.image) {
-      if (brand.image) {
-        try {
-          await fs.unlink(brand.image); 
-        } catch (err) {
-          console.warn("Failed to delete old image:", err.message);
-        }
-      }
-      brand.image = data.image;
+if (data.image) {
+  if (brand.image) {
+    try {
+      await fs.unlink(brand.image);
+    } catch (err) {
+      console.warn('Failed to remove old brand image:', (err as Error).message);
     }
+  }
+  brand.image = data.image;
+}
 
     return await brand.save();
   }
@@ -57,4 +58,21 @@ export class BrandService {
   async findAll(){
     return await this.brandModel.find()
   }
+
+async delete(id: string) {
+    const brand = await this.brandModel.findById(id);
+    if (!brand) throw new NotFoundException("Brand not found");
+
+    await this.productModel.deleteMany({ brand: id });
+    if (brand.image) {
+        try {
+            await fs.unlink(brand.image);
+        } catch {}
+    }
+    await this.brandModel.findByIdAndDelete(id);
+
+    return { message: "Brand + related products deleted" };
+}
+
+
 }

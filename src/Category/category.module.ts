@@ -1,18 +1,21 @@
-import {Module} from '@nestjs/common'
-import { CategoryController } from './category.controller';
+import { Module } from '@nestjs/common';
+import { MongooseModule } from '@nestjs/mongoose';
 import { CategoryService } from './category.service';
-import { CategoryModel } from 'src/Models/category.model';
-import { BrandModel } from 'src/Models/brand.model';
-import { UserModel } from 'src/Models/user.model';
-import { JwtService } from '@nestjs/jwt';
+import { CategoryController } from './category.controller';
+import { Category, categorySchema } from 'src/Models/category.model';
+import { Brand, brandSchema } from 'src/Models/brand.model';
+import { UsersModule } from 'src/Users/user.module';
 
 @Module({
-    imports: [CategoryModel, BrandModel, UserModel],
-    controllers: [CategoryController],
-    providers: [CategoryService, JwtService]
+  imports: [
+    MongooseModule.forFeature([
+      { name: Category.name, schema: categorySchema },
+      { name: Brand.name, schema: brandSchema },
+    ]),
+    UsersModule, 
+  ],
+  controllers: [CategoryController],
+  providers: [CategoryService],
+  exports: [CategoryService],
 })
-
-
-
-
 export class CategoryModule {}

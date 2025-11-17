@@ -6,9 +6,7 @@ import { Category } from "./category.model";
 import { Brand } from "./brand.model";
 
 
-@Schema({
-    timestamps: true
-})
+@Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
 export class Product{
     @Prop({
         type: String,
@@ -38,7 +36,7 @@ export class Product{
     @Prop({
         type: mongoose.Schema.Types.ObjectId,
         required: true,
-        ref: User.name
+        ref: 'User'
     })
     createdBy: Types.ObjectId
 
@@ -90,30 +88,53 @@ export class Product{
 
     @Prop({
         type: [mongoose.Schema.Types.ObjectId],
-        ref: Category.name
+        ref: 'Category'
     } )
     category: Types.ObjectId
 
 
     @Prop({
         type: [mongoose.Schema.Types.ObjectId],
-        ref: Brand.name
+        ref: 'Brand'
     } )
     brand: Types.ObjectId
 
+
+@Prop({
+    type: [
+      {
+        name: String, 
+        sku: String,
+        additionalPrice: Number,
+        stock: { type: Number, default: 0 },
+        image: String
+      }
+    ],
+    default: []
+  })
+  variants: Array<{
+    name?: string;
+    sku?: string;
+    additionalPrice?: number;
+    stock?: number;
+    image?: string;
+  }>;
 }
 
-const brandSchema = SchemaFactory.createForClass(Brand);
-
-
-brandSchema.pre('save', function (next){
-    this.slug = slugify(this.name, {
-        lower: true,
-    })
-    next()
-})
 
 const productSchema = SchemaFactory.createForClass(Product);
+
+
+productSchema.pre('save', function (next) {
+  if (this.isModified('name')) {
+    this.slug = slugify(this.name, { lower: true });
+  }
+  if (!this.salePrice || this.isModified('originalPrice') || this.isModified('discount')) {
+    this.salePrice = this.originalPrice - (this.discount / 100) * this.originalPrice;
+  }
+  next();
+});
+
 
 
 
@@ -123,3 +144,5 @@ export const ProductModel = MongooseModule.forFeature([
         schema: productSchema
     }
 ])
+
+export { productSchema }

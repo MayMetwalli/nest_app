@@ -1,63 +1,36 @@
-import { MongooseModule, Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import mongoose, { Types } from "mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import mongoose, { Types, Document } from "mongoose";
 import slugify from "slugify";
-import { User } from "src/Users/user.schema";
 import { Brand } from "./brand.model";
+import { Product } from "./product.model";
+import * as fs from "fs/promises";
 
+export type CategoryDocument = Category & Document;
 
-@Schema({
-    timestamps: true
-})
-export class Category{
-    @Prop({
-        type: String,
-        required: true,
-        unique: true
-    })
-    name: string
+@Schema({ timestamps: true, toJSON: { virtuals: true }, toObject: { virtuals: true } })
+export class Category {
+  @Prop({ type: String, required: true, unique: true })
+  name: string;
 
-    @Prop({
-        type: String,
-        required: true,
-        unique: true,
-        set: function(value: string){
-            this.set({slug: slugify(value)}) 
-            return value
-        }
-    })
-    slug: string
+  @Prop({
+    type: String,
+    required: true,
+    unique: true,
+    set: function (value: string) {
+      this.set({ slug: slugify(value) });
+      return value;
+    },
+  })
+  slug: string;
 
-    @Prop({
-        type: mongoose.Schema.Types.ObjectId,
-        required: true,
-        ref: User.name
-    })
-    createdBy: Types.ObjectId
+  @Prop({ type: mongoose.Schema.Types.ObjectId, required: true, ref: 'User' })
+  createdBy: Types.ObjectId;
 
-    @Prop({
-        type: String,
-        required: true,
+  @Prop({ type: String, required: true })
+  image: string;
 
-    })
-    image: string
-
-    @Prop({
-        type: [mongoose.Schema.Types.ObjectId],
-        ref: Brand.name
-    } )
-
-    brands: Array<Types.ObjectId>
+  @Prop({ type: [mongoose.Schema.Types.ObjectId], ref: 'Brand', default: [] })
+  brands: Types.ObjectId[];
 }
 
-const categorySchema = SchemaFactory.createForClass(Category);
-
-
-
-
-
-export const CategoryModel = MongooseModule.forFeature([
-    {
-        name: Category.name,
-        schema: categorySchema
-    }
-])
+export const categorySchema = SchemaFactory.createForClass(Category);

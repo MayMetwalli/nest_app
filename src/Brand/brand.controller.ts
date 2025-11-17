@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
+import { Body, Controller, Delete, Get, Param, Patch, Post, Req, UploadedFile, UseGuards, UseInterceptors } from "@nestjs/common";
 import { BrandService } from "./brand.service";
 import { type IBrand } from "src/Types/brand.type";
 import { FileInterceptor } from "@nestjs/platform-express";
@@ -58,4 +58,10 @@ export class BrandController{
             data: await this.brandService.findAll()
         }
     }
+
+    @Delete(':id')
+@UseGuards(AuthGuard)
+async deleteBrand(@Param('id') id: string) {
+    return this.brandService.delete(id);
+}
 }

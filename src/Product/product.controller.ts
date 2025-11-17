@@ -1,4 +1,4 @@
-import { Body, Controller, Post, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
+import { Body, Controller, Delete, Param, Post, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
 import { ProductService } from './product.service';
 import { IProduct } from 'src/Types/product.type';
 import { AuthGuard, type AuthRequest } from 'src/Guards/auth.guard';
@@ -23,4 +23,11 @@ export class ProductController{
             data.createdBy = req.user._id
         return this.productService.create(data)
     }
+
+    @Delete(':id')
+@UseGuards(AuthGuard)
+async deleteProduct(@Param('id') id: string) {
+    return this.productService.delete(id);
+}
+
 }

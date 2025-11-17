@@ -11,8 +11,8 @@ import { MailerService } from '@nestjs-modules/mailer';
 export class AuthService {
   constructor(
     @InjectModel(User.name) private userModel: Model<User>,
-    private jwtService: JwtService,       
-    private mailerService: MailerService
+    private readonly jwtService: JwtService,       
+    private readonly mailerService: MailerService
   ) {}
 
   async signup(data: SignupDto) {

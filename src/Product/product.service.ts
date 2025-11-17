@@ -31,8 +31,24 @@ export class ProductService {
                 return {
                     data: product
                 }
-            
+            }
+              async findByCategory(categoryId: string | Types.ObjectId) {
+    return this.productModel.find({ category: categoryId }).lean();
+  } async delete(id: string) {
+    const product = await this.productModel.findById(id);
+    if (!product) throw new NotFoundException("Product not found");
+
+    if (product.image && Array.isArray(product.image)) {
+    for (const img of product.image) {
+        try {
+            await fs.unlink(img);
+        } catch {}
     }
+}
 
 
+    await this.productModel.findByIdAndDelete(id);
+
+    return { message: "Product deleted" };
+}
 }
